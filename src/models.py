@@ -1,7 +1,7 @@
 #Modélisation d'une bibliothèque
 from src.gestion_json import *
-from exceptions import ErreurBibliotheque,ErreurDonnees,ErreurLivre,ErreurLivreNumerique
-class Bibliothèque:
+from src.exceptions import ErreurBibliotheque,ErreurDonnees,ErreurLivre,ErreurLivreNumerique
+class Bibliotheque:
     def __init__(self, nom:str):
         if not isinstance(nom, str) or not nom.strip():
             raise ErreurBibliotheque("Le nom de la bibliothèque doit être une chaîne non vide.",code_erreur=104)
@@ -23,7 +23,7 @@ class Bibliothèque:
         donnees=recup_donnees_json()
         importer_donnes_json(self,donnees)
             
-    def supprimer_livre(self, isbn:str):
+    def supprimer_livre_par_ISBN(self, isbn:str):
         if not isinstance(isbn,str):
             raise ErreurBibliotheque("Vous essayer de supprimer autre chose qu'une instance de Livre ou de Livre_numerique de la bibliothèque", code_erreur=103)
         supprimer_livre_par_ISBN_dans_json(isbn)
@@ -38,10 +38,16 @@ class Bibliothèque:
         if not isinstance(chaine,str):
             raise ErreurBibliotheque("La chaine de recherche doit être un str", code_erreur=105)
         return [livre for livre in self._liste_livres if chaine in livre.Auteur]
+    
+    def Getliste_livres(self)->list:
+        return self._liste_livres
+    
+    def Getnom(self)->str:
+        return self._nom
 
     @property
     def afficher(self):
-        return self._nom, self._liste_livres
+        return (self._nom, self._liste_livres)
 
 #Modélisation d'une classe livre
 class Livre:

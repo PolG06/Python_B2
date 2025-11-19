@@ -1,11 +1,13 @@
 import json
 import csv
-from exceptions import ErreurDonnees
+from src.exceptions import ErreurDonnees
 
-def ajouter_livre_dans_json(livre,fichier_json:str='../data/data.json'):
-    from src.models import Livre_numerique
+def ajouter_livre_dans_json(livre,fichier_json:str='data/data.json'):
+    from src.models import Livre_numerique,Livre
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
+    if not isinstance(livre,Livre):
+        raise ErreurDonnees("Erreur, le livre entré doit être un instance de Livre ou de Livre_numerique",code_erreur=107)
 
     try:
         with open(fichier_json, 'r', encoding='utf-8') as f:
@@ -31,7 +33,7 @@ def ajouter_livre_dans_json(livre,fichier_json:str='../data/data.json'):
     with open(fichier_json, 'w', encoding='utf-8') as f:
         json.dump(donnees, f, indent=2)
 
-def recup_donnees_json(fichier_json:str='../data/data.json'):
+def recup_donnees_json(fichier_json:str='data/data.json'):
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     try:
@@ -63,10 +65,10 @@ def importer_donnes_json(bibliotheque, donnees:list):
             bibliotheque.ajouter_livre(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"]))
         else: 
             if not isinstance(livre["taille_du_fichier"], int) or livre["taille_du_fichier"]<0:
-                raise ErreurDonnees("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=101)
+                raise ErreurDonnees("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=108)
             bibliotheque.ajouter_livre(Livre(livre["titre"],livre["auteur"],livre["ISBN"]))
 
-def supprimer_livre_par_ISBN_dans_json(isbn:str, fichier_json:str='../data/data.json'):
+def supprimer_livre_par_ISBN_dans_json(isbn:str, fichier_json:str='data/data.json'):
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     if not isinstance(isbn, str) or not isbn.strip():
@@ -81,7 +83,7 @@ def supprimer_livre_par_ISBN_dans_json(isbn:str, fichier_json:str='../data/data.
     with open(fichier_json, 'w', encoding='utf-8') as f:
         json.dump(donnees, f, indent=2)
 
-def exporter_donnees_en_csv(fichier_json:str='../data/data.json',fichier_csv:str='../data/data.csv'):
+def exporter_donnees_en_csv(fichier_json:str='data/data.json',fichier_csv:str='data/data.csv'):
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     if not isinstance(fichier_csv,str):
@@ -94,4 +96,18 @@ def exporter_donnees_en_csv(fichier_json:str='../data/data.json',fichier_csv:str
         writer = csv.DictWriter(fichier, fieldnames=descripteurs)
         writer.writeheader()
         writer.writerows(donnees)
+
+def reinitialiser_json(fichier_json: str = 'data/data.json'):
     
+    if not isinstance(fichier_json, str):
+        raise ErreurDonnees(
+            "Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",
+            code_erreur=101
+        )
+
+    try:
+        with open(fichier_json, 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
+            
+    except Exception:
+        raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)
