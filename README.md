@@ -30,7 +30,7 @@ bibliothèque pytest-cov (version supérieure ou égale à la 7.0.0)
 
 --Comment utiliser le projet:--
 
-1-Dans un terminal, entrer la commande: git clone https://github.com/utilisateur/projet.git
+1-Dans un terminal, entrer la commande: git clone https://github.com/PolG06/Python_B2
 2-installer les bibliothèques et logiciels conformément au fichier requirement.txt
 3-Ouvrir et lancer le fichier main grâce à un IDE qui supporte python (Je recommande VSCode)
 
