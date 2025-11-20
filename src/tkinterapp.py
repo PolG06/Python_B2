@@ -1,13 +1,14 @@
 import tkinter as tk
-from tkinter import ttk,Frame
-from src.models import Bibliotheque
+from tkinter import ttk,messagebox
+from src.models import *
+from src.file_manager import * 
 
 class AppBibliotheque ():
     def __init__(self):
         self.bibliotheque=Bibliotheque("Bibliothèque")
         self.fenetre = tk.Tk()
         self.fenetre.title("Python B2")
-        self.fenetre.geometry("400x300")
+        self.fenetre.geometry("1000x800")
 
         self.creer_widgets()
         self.run()
@@ -15,9 +16,7 @@ class AppBibliotheque ():
     def run(self):
         self.fenetre.mainloop()
     
-    def creer_widgets(self):
-
-        
+    def creer_widgets(self):        
         main_label = tk.Label(self.fenetre, text="Gestion de votre Bibliothèque", font=("Arial", 14))
         main_label.pack(pady=10)
         frame_add_book = ttk.LabelFrame(self.fenetre, text="Ajouter un livre")
@@ -46,22 +45,64 @@ class AppBibliotheque ():
 
         ttk.Button(frame_show_books, text="Afficher", command=self.clic_bouton_show_books).pack(pady=5)
 
-        frame_search_books = ttk.LabelFrame(self.fenetre, text="Rechercher par auteur")
-        frame_search_books.pack(fill="x", padx=10, pady=5)
+        frame_search_books_by_author = ttk.LabelFrame(self.fenetre, text="Rechercher par auteur")
+        frame_search_books_by_author.pack(fill="x", padx=10, pady=5)
 
-        self.entry_author_search = ttk.Entry(frame_search_books)
+        self.entry_author_search = ttk.Entry(frame_search_books_by_author)
         self.entry_author_search.pack(fill="x", padx=5, pady=2)
 
-        ttk.Button(frame_search_books, text="Rechercher", command=self.Rechercher_livre_par_auteur).pack(pady=5)
+        ttk.Button(frame_search_books_by_author, text="Rechercher", command=self.Rechercher_livre_par_auteur).pack(pady=5)
+
+        frame_export_data = ttk.LabelFrame(self.fenetre, text="Exporter les données dans un fichier CSV")
+        frame_export_data.pack(fill="x", padx=10, pady=5)
+        ttk.Button(frame_export_data, text="Exporter CSV", command=self.Exporter_data_csv).pack(pady=5)
+
 
     def load_data(self):
-        pass
+        data_recup_json=recup_donnees_json()
+        importer_donnes_json(self.bibliotheque,data_recup_json)
+        messagebox.showinfo("Succès","Données bien importées!")
 
-    def clic_bouton_show_books():
-        print("Bouton show books cliqué!")
+    def clic_bouton_show_books(self):
+        for livre in self.bibliotheque.Getliste_livres():
+            if (isinstance (livre,Livre_numerique)):
+                print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
+            elif isinstance (livre,Livre): 
+                print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
+            messagebox.showinfo("Succès","Vos livres s'affichent en console!")
     
-    def Ajouter_noveau_livre():
-        print("Bouton ajouter_livre cliqué!")
+    def Ajouter_nouveau_livre(self):
+        titre = self.entry_title.get().strip()
+        auteur = self.entry_author.get().strip()
+        isbn = self.entry_isbn.get().strip()
+        taille_fichier = self.entry_file_size.get().strip()
 
-    def Rechercher_livre_par_auteur():
-        print("Bouton recherché cliqué!")
+        if not titre or not auteur or not isbn:
+            messagebox.showwarning("Champs manquants","Veuillez remplir tous les champs !")
+        else :
+            if not taille_fichier:
+                ajouter_livre_dans_json(Livre(titre,auteur,isbn))
+            else:
+                ajouter_livre_dans_json(Livre_numerique(titre,auteur,isbn,int(taille_fichier)))
+
+    def Rechercher_livre_par_auteur(self):
+        auteur = self.entry_author_search.get().strip()
+        if not auteur:
+            messagebox.showwarning("Champs manquants","Veuillez remplir le champ de l'auteur pour pouvoir rechercher des livres de celui-ci !")
+        else :
+            print ("Résultat de la recherche: ")
+            resultat_recherche=self.bibliotheque.rechercher_livre_par_auteur(auteur)
+            if len(resultat_recherche)==0:
+                messagebox.showinfo("Succès","La recherche n'a rien donné!")
+            else:
+                print ("La recherche a donné: ")
+                for livre in resultat_recherche:
+                    if (isinstance (livre,Livre_numerique)):
+                        print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
+                    elif isinstance (livre,Livre): 
+                        print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
+
+    
+    def Exporter_data_csv(self):
+        exporter_donnees_en_csv()
+        messagebox.showinfo("Succès","Données bien exportées!")
