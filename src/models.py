@@ -1,4 +1,5 @@
 #Modélisation d'une bibliothèque
+from datetime import datetime
 from src.file_manager import *
 from src.exceptions import ErreurBibliotheque,ErreurLivre,ErreurLivreNumerique
 class Bibliotheque:
@@ -83,3 +84,45 @@ class Livre_numerique(Livre):
     @property
     def tailleFichier(self)->int:
         return self._taille_fichier
+    
+class Utilisateur():
+    def __init__(self,nom,mdp):
+        self.Nom=nom
+        self.MDP=mdp
+        self.IsAdmin=False
+        self.livres_empruntes=[]
+        self.livres_empruntes_ce_mois=0
+        self.livres_par_mois=5
+    
+    def promouvoir(self):
+        if not self.IsAdmin:
+            self.IsAdmin=True
+            self.livres_par_mois*=2
+
+    def enregistrer_utilisateur_dans_json(self):
+        ajouter_utilisateur_dans_json(self)
+
+    def emprunter_livre(self, livre, date_debut, date_fin):
+        date_debut_dt = datetime.strptime(date_debut, "%d/%m/%Y")
+        date_fin_dt = datetime.strptime(date_fin, "%d/%m/%Y")
+
+        if self.livres_empruntes_ce_mois >= self.livres_par_mois:
+            print("Vous avez emprunté tous vos livres ce mois-ci, veuillez revenir le mois prochain.")
+            return
+
+        for l in self.livres_empruntes:
+            emprunt_start = datetime.strptime(l[1][0], "%d/%m/%Y")
+            emprunt_end = datetime.strptime(l[1][1], "%d/%m/%Y")
+            if (date_debut_dt <= emprunt_end and date_fin_dt >= emprunt_start):
+                print(self.Nom+" ne peut pas emprunter 2 livres en même temps.")
+                return
+
+        self.livres_empruntes.append((livre, (date_debut, date_fin)))
+        ajouter_livre_emprunte(self, livre, date_debut, date_fin)
+        self.livres_empruntes_ce_mois+=1
+        print(self.Nom+" a emprunté le livre du "+date_debut+" au "+date_fin)
+
+    def reset_livres_empruntes_ce_mois(self):
+        self.livres_empruntes_ce_mois
+
+        

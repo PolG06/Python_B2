@@ -1,29 +1,78 @@
 [
   {
-    "titre": "Alex et les Amis",
-    "auteur": "Moi",
-    "ISBN": "PPoaohbr7878",
+    "titre": "Les Mis\u00e9rables",
+    "auteur": "Victor Hugo",
+    "ISBN": "VH1234",
     "taille_du_fichier": 0,
     "est_numerique": false
   },
   {
-    "titre": "OKLetsgo",
-    "auteur": "DjDjango",
-    "ISBN": "az",
-    "taille_du_fichier": 12354948494,
+    "titre": "Alice au pays des merveilles",
+    "auteur": "Lewis Carroll",
+    "ISBN": "LC5678",
+    "taille_du_fichier": 15,
     "est_numerique": true
   },
   {
-    "titre": "qqq",
-    "auteur": "ssss",
-    "ISBN": "xqscq",
-    "taille_du_fichier": 12,
+    "titre": "Harry Potter \u00e0 l'\u00e9cole des sorciers",
+    "auteur": "J.K. Rowling",
+    "ISBN": "JK0001",
+    "taille_du_fichier": 120,
     "est_numerique": true
   },
   {
-    "titre": "adada",
-    "auteur": "azdazd",
-    "ISBN": "daad",
+    "titre": "Orgueil et Pr\u00e9jug\u00e9s",
+    "auteur": "Jane Austen",
+    "ISBN": "JA1122",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  },
+  {
+    "titre": "Moby Dick",
+    "auteur": "Herman Melville",
+    "ISBN": "HM3344",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  },
+  {
+    "titre": "Le Seigneur des Anneaux : La Communaut\u00e9 de l'Anneau",
+    "auteur": "J.R.R. Tolkien",
+    "ISBN": "JR5678",
+    "taille_du_fichier": 200,
+    "est_numerique": true
+  },
+  {
+    "titre": "Jane Eyre",
+    "auteur": "Charlotte Bront\u00eb",
+    "ISBN": "CB7788",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  },
+  {
+    "titre": "Dracula",
+    "auteur": "Bram Stoker",
+    "ISBN": "BS9900",
+    "taille_du_fichier": 30,
+    "est_numerique": true
+  },
+  {
+    "titre": "Le Vieil Homme et la Mer",
+    "auteur": "Ernest Hemingway",
+    "ISBN": "EH5566",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  },
+  {
+    "titre": "Les Aventures de Tom Sawyer",
+    "auteur": "Mark Twain",
+    "ISBN": "MT1122",
+    "taille_du_fichier": 10,
+    "est_numerique": true
+  },
+  {
+    "titre": "1984",
+    "auteur": "George Orwell",
+    "ISBN": "12345",
     "taille_du_fichier": 0,
     "est_numerique": false
   }

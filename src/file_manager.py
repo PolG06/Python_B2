@@ -1,7 +1,7 @@
 import json
 import csv
 from src.exceptions import ErreurDonnees
-
+from src.models import Livre_numerique
 
 def ajouter_livre_dans_json(livre):
     fichier_json='data/data.json'
@@ -30,6 +30,71 @@ def ajouter_livre_dans_json(livre):
         'taille_du_fichier': taille_fichier,
         'est_numerique': est_numerique
     })
+
+    with open(fichier_json, 'w', encoding='utf-8') as f:
+        json.dump(donnees, f, indent=2)
+
+def ajouter_utilisateur_dans_json(utilisateur):
+    fichier_json='data/utilisateurs.json'
+    from src.models import Utilisateur
+    if not isinstance(fichier_json,str):
+        raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
+    if not isinstance(utilisateur,Utilisateur):
+        raise ErreurDonnees("Erreur, le livre entré doit être un instance de Livre ou de Livre_numerique",code_erreur=107)
+
+    try:
+        with open(fichier_json, 'r', encoding='utf-8') as f:
+            donnees = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        raise ErreurDonnees("Impossible d'ouvrir le fichier Json renseigné",106)
+
+    donnees.append({
+        'nom': utilisateur.Nom,
+        'mot de passe': utilisateur.MDP,
+        'Admin?': utilisateur.IsAdmin,
+        'liste de livres empruntés': []
+    })
+    with open(fichier_json, 'w', encoding='utf-8') as f:
+        json.dump(donnees, f, indent=2)
+    
+def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin):
+    from src.models import Livre, Livre_numerique
+    fichier_json = 'data/utilisateurs.json'
+
+    # Vérifications simples
+    if not isinstance(utilisateur, str):  # on utilise le nom pour identifier l'utilisateur
+        raise ErreurDonnees("Le nom de l'utilisateur doit être une string", code_erreur=107)
+    if not isinstance(livre, Livre):
+        raise ErreurDonnees("Le livre doit être une instance de Livre ou Livre_numerique", code_erreur=107)
+
+    # Détermination des attributs du livre
+    if isinstance(livre, Livre_numerique):
+        est_numerique = True
+        taille_fichier = livre.tailleFichier
+    else:
+        est_numerique = False
+        taille_fichier = 0
+
+    try:
+        with open(fichier_json, 'r', encoding='utf-8') as f:
+            donnees = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        raise ErreurDonnees("Impossible d'ouvrir le fichier JSON des utilisateurs", 106)
+
+    for utilisateur_parcouru in donnees:
+        if utilisateur_parcouru['nom'] == utilisateur:
+            utilisateur_parcouru['liste de livres empruntés'].append({
+                'titre': livre.Titre,
+                'auteur': livre.Auteur,
+                'ISBN': livre.ISBN,
+                'taille_du_fichier': taille_fichier,
+                'est_numerique': est_numerique,
+                'date_debut': date_debut,
+                'date_fin': date_fin
+            })
+            break
+    else:
+        raise ErreurDonnees(f"L'utilisateur {utilisateur} n'existe pas dans le JSON", 107)
 
     with open(fichier_json, 'w', encoding='utf-8') as f:
         json.dump(donnees, f, indent=2)
@@ -103,7 +168,6 @@ def exporter_donnees_en_csv():
         writer = csv.DictWriter(fichier, fieldnames=descripteurs)
         writer.writeheader()
         writer.writerows(donnees)
-
 def reinitialiser_json():
     fichier_json = 'data/data.json'
     if not isinstance(fichier_json, str):
@@ -112,9 +176,81 @@ def reinitialiser_json():
             code_erreur=101
         )
 
+    livres_initiales = [
+        {
+            "titre": "Les Misérables",
+            "auteur": "Victor Hugo",
+            "ISBN": "VH1234",
+            "taille_du_fichier": 0,
+            "est_numerique": False
+        },
+        {
+            "titre": "Alice au pays des merveilles",
+            "auteur": "Lewis Carroll",
+            "ISBN": "LC5678",
+            "taille_du_fichier": 15,
+            "est_numerique": True
+        },
+        {
+            "titre": "Harry Potter à l'école des sorciers",
+            "auteur": "J.K. Rowling",
+            "ISBN": "JK0001",
+            "taille_du_fichier": 120,
+            "est_numerique": True
+        },
+        {
+            "titre": "Orgueil et Préjugés",
+            "auteur": "Jane Austen",
+            "ISBN": "JA1122",
+            "taille_du_fichier": 0,
+            "est_numerique": False
+        },
+        {
+            "titre": "Moby Dick",
+            "auteur": "Herman Melville",
+            "ISBN": "HM3344",
+            "taille_du_fichier": 0,
+            "est_numerique": False
+        },
+        {
+            "titre": "Le Seigneur des Anneaux : La Communauté de l'Anneau",
+            "auteur": "J.R.R. Tolkien",
+            "ISBN": "JR5678",
+            "taille_du_fichier": 200,
+            "est_numerique": True
+        },
+        {
+            "titre": "Jane Eyre",
+            "auteur": "Charlotte Brontë",
+            "ISBN": "CB7788",
+            "taille_du_fichier": 0,
+            "est_numerique": False
+        },
+        {
+            "titre": "Dracula",
+            "auteur": "Bram Stoker",
+            "ISBN": "BS9900",
+            "taille_du_fichier": 30,
+            "est_numerique": True
+        },
+        {
+            "titre": "Le Vieil Homme et la Mer",
+            "auteur": "Ernest Hemingway",
+            "ISBN": "EH5566",
+            "taille_du_fichier": 0,
+            "est_numerique": False
+        },
+        {
+            "titre": "Les Aventures de Tom Sawyer",
+            "auteur": "Mark Twain",
+            "ISBN": "MT1122",
+            "taille_du_fichier": 10,
+            "est_numerique": True
+        }
+    ]
+
     try:
         with open(fichier_json, 'w', encoding='utf-8') as f:
-            json.dump([], f, indent=2)
-            
+            json.dump(livres_initiales, f, indent=2)
     except Exception:
-        raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106) 
+        raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)

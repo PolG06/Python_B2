@@ -5,7 +5,6 @@ from src.exceptions import *
 from tests.conftest import *
 
 def test_erreurs_creation_livre():
-    reinitialiser_json()
     with pytest.raises(ErreurLivre) as exc_info:
         Livre(1, "Jean Dubois", "I31BS-7")
     assert exc_info.value.code_erreur == 101
@@ -129,4 +128,3 @@ def test_fonctionnement_bibliotheque(bibliotheque2:Bibliotheque,livre1:Livre):
     assert len(b2.rechercher_livre_par_auteur("auteurquin'existepas"))==0
     assert len(b2.Getliste_livres())==8
     assert livre1 in b2.rechercher_livre_par_auteur(livre1.Auteur)
-    reinitialiser_json()
