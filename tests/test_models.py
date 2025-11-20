@@ -5,7 +5,7 @@ from src.exceptions import *
 from tests.conftest import *
 
 def test_erreurs_creation_livre():
-
+    reinitialiser_json()
     with pytest.raises(ErreurLivre) as exc_info:
         Livre(1, "Jean Dubois", "I31BS-7")
     assert exc_info.value.code_erreur == 101

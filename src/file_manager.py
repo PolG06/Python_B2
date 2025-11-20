@@ -16,7 +16,6 @@ def ajouter_livre_dans_json(livre):
             donnees = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         raise ErreurDonnees("Impossible d'ouvrir le fichier Json renseigné",106)
-
     if isinstance(livre, Livre_numerique):
         est_numerique=True
         taille_fichier = livre.tailleFichier
@@ -68,10 +67,10 @@ def importer_donnes_json(bibliotheque, donnees:list):
             if not isinstance(livre["taille_du_fichier"], int) or livre["taille_du_fichier"]<0:
                 raise ErreurDonnees("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=108)
             else:
-                bibliotheque.ajouter_livre(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"]))
+                bibliotheque.ajouter_livre_dans_liste(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"]))
         else: 
             
-            bibliotheque.ajouter_livre(Livre(livre["titre"],livre["auteur"],livre["ISBN"]))
+            bibliotheque.ajouter_livre_dans_liste(Livre(livre["titre"],livre["auteur"],livre["ISBN"]))
 
 def supprimer_livre_par_ISBN_dans_json(isbn:str):
     fichier_json='data/data.json'
@@ -96,7 +95,7 @@ def exporter_donnees_en_csv():
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     if not isinstance(fichier_csv,str):
         raise ErreurDonnees("Erreur, le nom du fichier csv doit être un str décrivant le chemin relatif",code_erreur=106)
-    donnees=recup_donnees_json(fichier_json)
+    donnees=recup_donnees_json()
     if len(donnees)==0:
         raise ErreurDonnees("Erreur, les données importées sont vides")
     descripteurs=list(donnees[0].keys())

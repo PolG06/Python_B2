@@ -8,8 +8,9 @@ class AppBibliotheque ():
         self.bibliotheque=Bibliotheque("Bibliothèque")
         self.fenetre = tk.Tk()
         self.fenetre.title("Python B2")
-        self.fenetre.geometry("1000x800")
+        self.fenetre.geometry("800x600")
 
+        self.load_data()
         self.creer_widgets()
         self.run()
     
@@ -57,19 +58,24 @@ class AppBibliotheque ():
         frame_export_data.pack(fill="x", padx=10, pady=5)
         ttk.Button(frame_export_data, text="Exporter CSV", command=self.Exporter_data_csv).pack(pady=5)
 
+        ttk.Button(text="Fermer", command=self.Fermer, width=15).pack(pady=(15, 5), ipady=10)
+
 
     def load_data(self):
         data_recup_json=recup_donnees_json()
         importer_donnes_json(self.bibliotheque,data_recup_json)
-        messagebox.showinfo("Succès","Données bien importées!")
+        print("Données bien importées!")
 
     def clic_bouton_show_books(self):
+        print("Voici tous vos livres")
         for livre in self.bibliotheque.Getliste_livres():
             if (isinstance (livre,Livre_numerique)):
                 print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
             elif isinstance (livre,Livre): 
                 print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
-            messagebox.showinfo("Succès","Vos livres s'affichent en console!")
+        print("-----------------------------------------------------")
+        messagebox.showinfo("Succès","Vos livres s'affichent en console!")
+        self.reinitialiser_entry_formulaire()
     
     def Ajouter_nouveau_livre(self):
         titre = self.entry_title.get().strip()
@@ -81,15 +87,18 @@ class AppBibliotheque ():
             messagebox.showwarning("Champs manquants","Veuillez remplir tous les champs !")
         else :
             if not taille_fichier:
-                ajouter_livre_dans_json(Livre(titre,auteur,isbn))
+                self.bibliotheque.ajouter_livre(Livre(titre,auteur,isbn))
             else:
-                ajouter_livre_dans_json(Livre_numerique(titre,auteur,isbn,int(taille_fichier)))
+                self.bibliotheque.ajouter_livre(Livre_numerique(titre,auteur,isbn,int(taille_fichier)))
+            messagebox.showinfo("Succès","Livre bien ajouté !")
+            self.reinitialiser_entry_formulaire()
 
     def Rechercher_livre_par_auteur(self):
         auteur = self.entry_author_search.get().strip()
         if not auteur:
-            messagebox.showwarning("Champs manquants","Veuillez remplir le champ de l'auteur pour pouvoir rechercher des livres de celui-ci !")
+            messagebox.showwarning("Champs manquants","Veuillez remplir le champ de l'auteur pour pouvoir rechercher des livres!")
         else :
+            print("Vous cherchez un ou plusieurs livres écrit dont l'auteur contient la chaine de caractère '"+auteur+"': ")
             print ("Résultat de la recherche: ")
             resultat_recherche=self.bibliotheque.rechercher_livre_par_auteur(auteur)
             if len(resultat_recherche)==0:
@@ -101,8 +110,23 @@ class AppBibliotheque ():
                         print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
                     elif isinstance (livre,Livre): 
                         print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
+                messagebox.showinfo("Succès","Les résultats de votre recherche s'affichent dans la console")
+            self.reinitialiser_entry_formulaire()
+            print("-----------------------------------------------------")
 
     
+    def reinitialiser_entry_formulaire(self):
+        self.entry_title.delete(0, tk.END)
+        self.entry_author.delete(0, tk.END)
+        self.entry_isbn.delete(0, tk.END)
+        self.entry_file_size.delete(0, tk.END)
+        self.entry_author_search.delete(0, tk.END)
+
+
     def Exporter_data_csv(self):
         exporter_donnees_en_csv()
         messagebox.showinfo("Succès","Données bien exportées!")
+        self.reinitialiser_entry_formulaire()
+
+    def Fermer(self):
+        self.fenetre.destroy()

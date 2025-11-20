@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "titre": "Alex et les Amis",
+    "auteur": "Moi",
+    "ISBN": "PPoaohbr7878",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  },
+  {
+    "titre": "OKLetsgo",
+    "auteur": "DjDjango",
+    "ISBN": "az",
+    "taille_du_fichier": 12354948494,
+    "est_numerique": true
+  },
+  {
+    "titre": "qqq",
+    "auteur": "ssss",
+    "ISBN": "xqscq",
+    "taille_du_fichier": 12,
+    "est_numerique": true
+  },
+  {
+    "titre": "adada",
+    "auteur": "azdazd",
+    "ISBN": "daad",
+    "taille_du_fichier": 0,
+    "est_numerique": false
+  }
+]
