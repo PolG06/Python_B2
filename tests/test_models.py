@@ -1,6 +1,6 @@
 import pytest
 from src.models import *
-from src.gestion_json import reinitialiser_json
+from src.file_manager import reinitialiser_json
 from src.exceptions import *
 from tests.conftest import *
 

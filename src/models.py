@@ -1,5 +1,5 @@
 #Modélisation d'une bibliothèque
-from src.gestion_json import *
+from src.file_manager import *
 from src.exceptions import ErreurBibliotheque,ErreurDonnees,ErreurLivre,ErreurLivreNumerique
 class Bibliotheque:
     def __init__(self, nom:str):
