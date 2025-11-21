@@ -74,6 +74,8 @@
     "auteur": "George Orwell",
     "ISBN": "12345",
     "taille_du_fichier": 0,
-    "est_numerique": false
+    "est_numerique": false,
+    "nombre d'exemplaires": 2,
+    "cat\u00e9gorgie": "Roman"
   }
 ]

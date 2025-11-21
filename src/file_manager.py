@@ -1,7 +1,6 @@
 import json
 import csv
 from src.exceptions import ErreurDonnees
-from src.models import Livre_numerique
 
 def ajouter_livre_dans_json(livre):
     fichier_json='data/data.json'
@@ -24,11 +23,13 @@ def ajouter_livre_dans_json(livre):
         est_numerique=False
 
     donnees.append({
-        'titre': livre.Titre,
-        'auteur': livre.Auteur,
+        'titre': livre.titre,
+        'auteur': livre.auteur,
         'ISBN': livre.ISBN,
         'taille_du_fichier': taille_fichier,
-        'est_numerique': est_numerique
+        'est_numerique': est_numerique,
+        "nombre d'exemplaires": livre.nombre_exemplaires,
+        'catégorgie':livre.categorie
     })
 
     with open(fichier_json, 'w', encoding='utf-8') as f:
@@ -57,7 +58,7 @@ def ajouter_utilisateur_dans_json(utilisateur):
     with open(fichier_json, 'w', encoding='utf-8') as f:
         json.dump(donnees, f, indent=2)
     
-def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin):
+def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin, est_rendu=False):
     from src.models import Livre, Livre_numerique
     fichier_json = 'data/utilisateurs.json'
 
@@ -84,13 +85,16 @@ def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin):
     for utilisateur_parcouru in donnees:
         if utilisateur_parcouru['nom'] == utilisateur:
             utilisateur_parcouru['liste de livres empruntés'].append({
-                'titre': livre.Titre,
-                'auteur': livre.Auteur,
+                'titre': livre.titre,
+                'auteur': livre.auteur,
                 'ISBN': livre.ISBN,
                 'taille_du_fichier': taille_fichier,
                 'est_numerique': est_numerique,
+                "nombre d'exemplaires": livre.nombre_exemplaires,
+                'catégorie':livre.categorie,
                 'date_debut': date_debut,
-                'date_fin': date_fin
+                'date_fin': date_fin,
+                'Est-rendu':est_rendu
             })
             break
     else:
@@ -114,7 +118,7 @@ def recup_donnees_json():
     except (FileNotFoundError, json.JSONDecodeError):
         raise ErreurDonnees("Impossible d'ouvrir le fichier Json renseigné",106)
 
-def importer_donnes_json(bibliotheque, donnees:list):
+def importer_donnees_json(bibliotheque, donnees:list):
     from src.models import Livre_numerique,Livre
     if not isinstance(donnees,list):
         raise (ErreurDonnees("Les données récupérées ne sont pas au bon format, vous devriez récupérer une liste de dictionnaires",code_erreur=101))
@@ -132,10 +136,9 @@ def importer_donnes_json(bibliotheque, donnees:list):
             if not isinstance(livre["taille_du_fichier"], int) or livre["taille_du_fichier"]<0:
                 raise ErreurDonnees("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=108)
             else:
-                bibliotheque.ajouter_livre_dans_liste(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"]))
+                bibliotheque.ajouter_livre_dans_liste(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"],livre['catégorie']))
         else: 
-            
-            bibliotheque.ajouter_livre_dans_liste(Livre(livre["titre"],livre["auteur"],livre["ISBN"]))
+            bibliotheque.ajouter_livre_dans_liste(Livre(livre["titre"],livre["auteur"],livre["ISBN"],livre["nombre d'exemplaires"],livre['catégorie']))
 
 def supprimer_livre_par_ISBN_dans_json(isbn:str):
     fichier_json='data/data.json'
@@ -168,6 +171,7 @@ def exporter_donnees_en_csv():
         writer = csv.DictWriter(fichier, fieldnames=descripteurs)
         writer.writeheader()
         writer.writerows(donnees)
+        
 def reinitialiser_json():
     fichier_json = 'data/data.json'
     if not isinstance(fichier_json, str):
@@ -176,81 +180,101 @@ def reinitialiser_json():
             code_erreur=101
         )
 
-    livres_initiales = [
-        {
-            "titre": "Les Misérables",
-            "auteur": "Victor Hugo",
-            "ISBN": "VH1234",
-            "taille_du_fichier": 0,
-            "est_numerique": False
-        },
-        {
-            "titre": "Alice au pays des merveilles",
-            "auteur": "Lewis Carroll",
-            "ISBN": "LC5678",
-            "taille_du_fichier": 15,
-            "est_numerique": True
-        },
-        {
-            "titre": "Harry Potter à l'école des sorciers",
-            "auteur": "J.K. Rowling",
-            "ISBN": "JK0001",
-            "taille_du_fichier": 120,
-            "est_numerique": True
-        },
-        {
-            "titre": "Orgueil et Préjugés",
-            "auteur": "Jane Austen",
-            "ISBN": "JA1122",
-            "taille_du_fichier": 0,
-            "est_numerique": False
-        },
-        {
-            "titre": "Moby Dick",
-            "auteur": "Herman Melville",
-            "ISBN": "HM3344",
-            "taille_du_fichier": 0,
-            "est_numerique": False
-        },
-        {
-            "titre": "Le Seigneur des Anneaux : La Communauté de l'Anneau",
-            "auteur": "J.R.R. Tolkien",
-            "ISBN": "JR5678",
-            "taille_du_fichier": 200,
-            "est_numerique": True
-        },
-        {
-            "titre": "Jane Eyre",
-            "auteur": "Charlotte Brontë",
-            "ISBN": "CB7788",
-            "taille_du_fichier": 0,
-            "est_numerique": False
-        },
-        {
-            "titre": "Dracula",
-            "auteur": "Bram Stoker",
-            "ISBN": "BS9900",
-            "taille_du_fichier": 30,
-            "est_numerique": True
-        },
-        {
-            "titre": "Le Vieil Homme et la Mer",
-            "auteur": "Ernest Hemingway",
-            "ISBN": "EH5566",
-            "taille_du_fichier": 0,
-            "est_numerique": False
-        },
-        {
-            "titre": "Les Aventures de Tom Sawyer",
-            "auteur": "Mark Twain",
-            "ISBN": "MT1122",
-            "taille_du_fichier": 10,
-            "est_numerique": True
-        }
-    ]
+    livres = [
+    {
+        "titre": "Les Misérables",
+        "auteur": "Victor Hugo",
+        "ISBN": "VH1234",
+        "taille_du_fichier": 0,
+        "est_numerique": False,
+        "nombre d'exemplaires": 5,
+        "catégorie": "Roman",
+    },
+    {
+        "titre": "Alice au pays des merveilles",
+        "auteur": "Lewis Carroll",
+        "ISBN": "LC5678",
+        "taille_du_fichier": 15,
+        "est_numerique": True,
+        "nombre d'exemplaires": None,
+        "catégorie": "Conte / Fantastique",
+    },
+    {
+        "titre": "Harry Potter à l'école des sorciers",
+        "auteur": "J.K. Rowling",
+        "ISBN": "JK0001",
+        "taille_du_fichier": 120,
+        "est_numerique": True,
+        "nombre d'exemplaires": None,
+        "catégorie": "Fantasy",
+    },
+    {
+        "titre": "Orgueil et Préjugés",
+        "auteur": "Jane Austen",
+        "ISBN": "JA1122",
+        "taille_du_fichier": 0,
+        "est_numerique": False,
+        "nombre d'exemplaires": 1,
+        "catégorie": "Roman",
+    },
+    {
+        "titre": "Moby Dick",
+        "auteur": "Herman Melville",
+        "ISBN": "HM3344",
+        "taille_du_fichier": 0,
+        "est_numerique": False,
+        "nombre d'exemplaires": 3,
+        "catégorie": "Roman d'aventure",
+    },
+    {
+        "titre": "Le Seigneur des Anneaux : La Communauté de l'Anneau",
+        "auteur": "J.R.R. Tolkien",
+        "ISBN": "JR5678",
+        "taille_du_fichier": 200,
+        "est_numerique": True,
+        "nombre d'exemplaires": None,
+        "catégorie": "Fantasy",
+    },
+    {
+        "titre": "Jane Eyre",
+        "auteur": "Charlotte Brontë",
+        "ISBN": "CB7788",
+        "taille_du_fichier": 0,
+        "est_numerique": False,
+        "nombre d'exemplaires": 2,
+        "catégorie": "Roman",
+    },
+    {
+        "titre": "Dracula",
+        "auteur": "Bram Stoker",
+        "ISBN": "BS9900",
+        "taille_du_fichier": 30,
+        "est_numerique": True,
+        "nombre d'exemplaires": None,
+        "catégorie": "Gothique / Horreur",
+    },
+    {
+        "titre": "Le Vieil Homme et la Mer",
+        "auteur": "Ernest Hemingway",
+        "ISBN": "EH5566",
+        "taille_du_fichier": 0,
+        "est_numerique": False,
+        "nombre d'exemplaires": 3,
+        "catégorie": "Roman",
+    },
+    {
+        "titre": "Les Aventures de Tom Sawyer",
+        "auteur": "Mark Twain",
+        "ISBN": "MT1122",
+        "taille_du_fichier": 10,
+        "est_numerique": True,
+        "nombre d'exemplaires": None,
+        "catégorie": "Roman d'aventure",
+    }
+]
 
     try:
         with open(fichier_json, 'w', encoding='utf-8') as f:
-            json.dump(livres_initiales, f, indent=2)
+            json.dump(livres, f, indent=2)
     except Exception:
         raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)

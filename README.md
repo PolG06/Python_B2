@@ -39,21 +39,12 @@ bibliothèque pytest-cov (version supérieure ou égale à la 7.0.0)
 ├── main.py                  → Point d'entrée de l'application
 ├── requirements.txt         → Dépendances Python (prérequis à avoir pour lancer le projet)
 ├── .coverage
-├── data/
-│   ├── data.json            → Base de données persistante (créé automatiquement)
-│   └── data.csv             → Export CSV des livres (généré sur demande)
-├── src/
-|   |── __init__.py          → Rend le dossier src importable comme un package avec src.
-│   ├── bibliothèque.py      → Classe principale Bibliothèque
-│   ├── livre.py             → Classe Livre
-│   ├── livre_numerique.py   → Classe Livre_numerique qui hérite de la classe Livre
-│   └── gestion_json.py      → Fonctions permettant l'interaction avec le main dans le fichier data
-├── tests/
-|   |── __init__.py          → Rend le dossier tests importable comme un package avec src.
-│   └── test_bibliothèque.py → Tests des classes bibliothèque, livre et livre_numérique
+├── data/                    → Fichiers de données     
+├── src/                     → Classes, Méthodes, Fonctions du projet
+├── tests/                   → Fichiers de test
 ├── mon_env/                 → Environnement virtuel que l'on a créé
 └── README.md
 
---pour lancer les tests, dans un terminal, aller à la racine du projet et taper: python -m pytest --cov tests--
+--pour lancer les tests, dans un terminal, aller à la racine du projet et taper: python -m pytest --cov tests
 
 --Construit avec VSCode--
