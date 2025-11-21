@@ -33,6 +33,10 @@ bibliothèque pytest-cov (version supérieure ou égale à la 7.0.0)
 1-Dans un terminal, entrer la commande: git clone https://github.com/PolG06/Python_B2
 2-installer les bibliothèques et logiciels conformément au fichier requirement.txt
 3-Ouvrir et lancer le fichier main grâce à un IDE qui supporte python (Je recommande VSCode)
+--> vous pouvez utiliser la commande python main.py
+
+à noter qu'une grande partie de mes fonctionnalités ne vont pas s'afficher depuisla fenetre lancée par le main, 
+cependant, certaines fonctionnalités sont présentes seuelement dans les fichiers src, data et tests.
 
 --Structure du projet:--
 .
@@ -46,5 +50,6 @@ bibliothèque pytest-cov (version supérieure ou égale à la 7.0.0)
 └── README.md
 
 --pour lancer les tests, dans un terminal, aller à la racine du projet et taper: python -m pytest --cov tests
+Mes tests aussi ne testent pas tout le code, mais seulement une petite partie
 
 --Construit avec VSCode--

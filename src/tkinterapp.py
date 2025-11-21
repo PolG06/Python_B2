@@ -8,7 +8,7 @@ class AppBibliotheque ():
         self.bibliotheque=Bibliotheque("Bibliothèque")
         self.fenetre = tk.Tk()
         self.fenetre.title("Python B2")
-        self.fenetre.geometry("800x600")
+        self.fenetre.geometry("800x650")
 
         self.load_data()
         self.creer_widgets()
@@ -39,6 +39,10 @@ class AppBibliotheque ():
         self.entry_file_size = ttk.Entry(frame_add_book)
         self.entry_file_size.pack(fill="x", padx=5, pady=2)
 
+        ttk.Label(frame_add_book, text="Catégorie du livre").pack(anchor="w", padx=5, pady=2)
+        self.entry_book_category = ttk.Entry(frame_add_book)
+        self.entry_book_category.pack(fill="x", padx=5, pady=2)
+
         ttk.Button(frame_add_book, text="Valider", command=self.Ajouter_nouveau_livre).pack(pady=5)
 
         frame_show_books = ttk.LabelFrame(self.fenetre, text="Afficher la liste des livres")
@@ -62,17 +66,17 @@ class AppBibliotheque ():
 
 
     def load_data(self):
-        data_recup_json=recup_donnees_json()
-        importer_donnes_json(self.bibliotheque,data_recup_json)
+        data_recup_json=charger_json("data/livres.json")
+        importer_donnees_json(self.bibliotheque,data_recup_json)
         print("Données bien importées!")
 
     def clic_bouton_show_books(self):
         print("Voici tous vos livres")
-        for livre in self.bibliotheque.Getliste_livres():
+        for livre in self.bibliotheque.liste_livres:
             if (isinstance (livre,Livre_numerique)):
-                print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
+                print ("-livre numérique: ",livre.titre,", il a été écrit par ",livre.auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier)," sa catégorie est: ",livre.categorie)
             elif isinstance (livre,Livre): 
-                print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
+                print ("-livre non-numérique: ",livre.titre,", il a été écrit par ",livre.auteur,"Son ISBN est: ",livre.ISBN," sa catégorie est: ",livre.categorie)
         print("-----------------------------------------------------")
         messagebox.showinfo("Succès","Vos livres s'affichent en console!")
         self.reinitialiser_entry_formulaire()
@@ -82,14 +86,15 @@ class AppBibliotheque ():
         auteur = self.entry_author.get().strip()
         isbn = self.entry_isbn.get().strip()
         taille_fichier = self.entry_file_size.get().strip()
+        categorie=self.entry_book_category.get().strip()
 
-        if not titre or not auteur or not isbn:
+        if not titre or not auteur or not isbn or not categorie:
             messagebox.showwarning("Champs manquants","Veuillez remplir tous les champs !")
         else :
             if not taille_fichier:
-                self.bibliotheque.ajouter_livre(Livre(titre,auteur,isbn))
+                self.bibliotheque.ajouter_livre(Livre(titre,auteur,isbn,categorie))
             else:
-                self.bibliotheque.ajouter_livre(Livre_numerique(titre,auteur,isbn,int(taille_fichier)))
+                self.bibliotheque.ajouter_livre(Livre_numerique(titre,auteur,isbn,int(taille_fichier),categorie))
             messagebox.showinfo("Succès","Livre bien ajouté !")
             self.reinitialiser_entry_formulaire()
 
@@ -107,9 +112,9 @@ class AppBibliotheque ():
                 print ("La recherche a donné: ")
                 for livre in resultat_recherche:
                     if (isinstance (livre,Livre_numerique)):
-                        print ("-livre numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
+                        print ("-livre numérique: ",livre.titre,", il a été écrit par ",livre.auteur,"Son ISBN est: ",livre.ISBN," et sa taille est "+str(livre.tailleFichier))
                     elif isinstance (livre,Livre): 
-                        print ("-livre non-numérique: ",livre.Titre,", il a été écrit par ",livre.Auteur,"Son ISBN est: ",livre.ISBN)
+                        print ("-livre non-numérique: ",livre.titre,", il a été écrit par ",livre.auteur,"Son ISBN est: ",livre.ISBN)
                 messagebox.showinfo("Succès","Les résultats de votre recherche s'affichent dans la console")
             self.reinitialiser_entry_formulaire()
             print("-----------------------------------------------------")

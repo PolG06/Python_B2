@@ -3,7 +3,7 @@ import csv
 from src.exceptions import ErreurDonnees
 
 def ajouter_livre_dans_json(livre):
-    fichier_json='data/data.json'
+    fichier_json='data/livres.json'
     from src.models import Livre_numerique,Livre
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
@@ -28,8 +28,8 @@ def ajouter_livre_dans_json(livre):
         'ISBN': livre.ISBN,
         'taille_du_fichier': taille_fichier,
         'est_numerique': est_numerique,
-        "nombre d'exemplaires": livre.nombre_exemplaires,
-        'catégorgie':livre.categorie
+        "id": livre.Id,
+        'categorie':livre.categorie
     })
 
     with open(fichier_json, 'w', encoding='utf-8') as f:
@@ -52,7 +52,7 @@ def ajouter_utilisateur_dans_json(utilisateur):
     donnees.append({
         'nom': utilisateur.Nom,
         'mot de passe': utilisateur.MDP,
-        'Admin?': utilisateur.IsAdmin,
+        'Admin': utilisateur.IsAdmin,
         'liste de livres empruntés': []
     })
     with open(fichier_json, 'w', encoding='utf-8') as f:
@@ -62,13 +62,11 @@ def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin, est_rendu=F
     from src.models import Livre, Livre_numerique
     fichier_json = 'data/utilisateurs.json'
 
-    # Vérifications simples
-    if not isinstance(utilisateur, str):  # on utilise le nom pour identifier l'utilisateur
+    if not isinstance(utilisateur, str): 
         raise ErreurDonnees("Le nom de l'utilisateur doit être une string", code_erreur=107)
     if not isinstance(livre, Livre):
         raise ErreurDonnees("Le livre doit être une instance de Livre ou Livre_numerique", code_erreur=107)
 
-    # Détermination des attributs du livre
     if isinstance(livre, Livre_numerique):
         est_numerique = True
         taille_fichier = livre.tailleFichier
@@ -90,8 +88,8 @@ def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin, est_rendu=F
                 'ISBN': livre.ISBN,
                 'taille_du_fichier': taille_fichier,
                 'est_numerique': est_numerique,
-                "nombre d'exemplaires": livre.nombre_exemplaires,
-                'catégorie':livre.categorie,
+                "id": livre.Id,
+                'categorie':livre.categorie,
                 'date_debut': date_debut,
                 'date_fin': date_fin,
                 'Est-rendu':est_rendu
@@ -103,20 +101,30 @@ def ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin, est_rendu=F
     with open(fichier_json, 'w', encoding='utf-8') as f:
         json.dump(donnees, f, indent=2)
 
-def recup_donnees_json():
-    fichier_json='data/data.json'
-    if not isinstance(fichier_json,str):
-        raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
+def charger_json(fichier: str):
+    if not isinstance(fichier, str):
+        raise ErreurDonnees(
+            "Le nom du fichier JSON doit être une chaîne de caractères",
+            code_erreur=101,
+        )
     try:
-        with open(fichier_json, 'r', encoding='utf-8') as f:
-            datas=json.load(f)
-            if not isinstance(datas,list):
-                raise (ErreurDonnees("Les données récupérées ne sont pas au bon format, vous devriez récupérer une liste de dictionnaires",code_erreur=101))
-            if not all(isinstance(d, dict) for d in datas):
-                raise ErreurDonnees("Chaque élément du JSON doit être un dictionnaire.", code_erreur=102)
-            return datas
+        with open(fichier, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            raise ErreurDonnees(
+                "Les données du JSON doivent être une liste",
+                code_erreur=101,
+            )
+        if not all(isinstance(elem, dict) for elem in data):
+            raise ErreurDonnees(
+                "Chaque élément doit être un dictionnaire",
+                code_erreur=102,
+            )
+        return data
+
     except (FileNotFoundError, json.JSONDecodeError):
-        raise ErreurDonnees("Impossible d'ouvrir le fichier Json renseigné",106)
+        raise ErreurDonnees("Impossible d'ouvrir le fichier JSON", 106)
 
 def importer_donnees_json(bibliotheque, donnees:list):
     from src.models import Livre_numerique,Livre
@@ -136,12 +144,12 @@ def importer_donnees_json(bibliotheque, donnees:list):
             if not isinstance(livre["taille_du_fichier"], int) or livre["taille_du_fichier"]<0:
                 raise ErreurDonnees("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=108)
             else:
-                bibliotheque.ajouter_livre_dans_liste(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"],livre['catégorie']))
+                bibliotheque.ajouter_livre_dans_liste(Livre_numerique(livre["titre"],livre["auteur"],livre["ISBN"],livre["taille_du_fichier"],livre['categorie']))
         else: 
-            bibliotheque.ajouter_livre_dans_liste(Livre(livre["titre"],livre["auteur"],livre["ISBN"],livre["nombre d'exemplaires"],livre['catégorie']))
+            bibliotheque.ajouter_livre_dans_liste(Livre(livre["titre"],livre["auteur"],livre["ISBN"],livre['categorie']))
 
 def supprimer_livre_par_ISBN_dans_json(isbn:str):
-    fichier_json='data/data.json'
+    fichier_json='data/livres.json'
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     if not isinstance(isbn, str) or not isbn.strip():
@@ -157,23 +165,25 @@ def supprimer_livre_par_ISBN_dans_json(isbn:str):
         json.dump(donnees, f, indent=2)
 
 def exporter_donnees_en_csv():
-    fichier_json='data/data.json'
-    fichier_csv='data/data.csv'
+    fichier_json='data/livres.json'
+    fichier_csv='data/livres.csv'
     if not isinstance(fichier_json,str):
         raise ErreurDonnees("Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",code_erreur=101)
     if not isinstance(fichier_csv,str):
         raise ErreurDonnees("Erreur, le nom du fichier csv doit être un str décrivant le chemin relatif",code_erreur=106)
-    donnees=recup_donnees_json()
-    if len(donnees)==0:
+    donnees_livre=charger_json("data/livres.json")
+    if len(donnees_livre)==0:
         raise ErreurDonnees("Erreur, les données importées sont vides")
-    descripteurs=list(donnees[0].keys())
+    descripteurs=list(donnees_livre[0].keys())
     with open(fichier_csv, 'w', newline='', encoding='utf-8') as fichier:
         writer = csv.DictWriter(fichier, fieldnames=descripteurs)
         writer.writeheader()
-        writer.writerows(donnees)
+        writer.writerows(donnees_livre)
+
+
         
 def reinitialiser_json():
-    fichier_json = 'data/data.json'
+    fichier_json = 'data/livres.json'
     if not isinstance(fichier_json, str):
         raise ErreurDonnees(
             "Erreur, le nom du fichier Json doit être un str décrivant le chemin relatif",
@@ -182,13 +192,13 @@ def reinitialiser_json():
 
     livres = [
     {
-        "titre": "Les Misérables",
+        "titre": "Les Miserables",
         "auteur": "Victor Hugo",
         "ISBN": "VH1234",
         "taille_du_fichier": 0,
         "est_numerique": False,
-        "nombre d'exemplaires": 5,
-        "catégorie": "Roman",
+        "id": 1,
+        "categorie": "Roman",
     },
     {
         "titre": "Alice au pays des merveilles",
@@ -196,26 +206,26 @@ def reinitialiser_json():
         "ISBN": "LC5678",
         "taille_du_fichier": 15,
         "est_numerique": True,
-        "nombre d'exemplaires": None,
-        "catégorie": "Conte / Fantastique",
+        "id": 2,
+        "categorie": "Conte / Fantastique",
     },
     {
-        "titre": "Harry Potter à l'école des sorciers",
+        "titre": "Harry Potter à l'ecole des sorciers",
         "auteur": "J.K. Rowling",
         "ISBN": "JK0001",
         "taille_du_fichier": 120,
         "est_numerique": True,
-        "nombre d'exemplaires": None,
-        "catégorie": "Fantasy",
+        "id": 3,
+        "categorie": "Fantasy",
     },
     {
-        "titre": "Orgueil et Préjugés",
+        "titre": "Orgueil et Prejuges",
         "auteur": "Jane Austen",
         "ISBN": "JA1122",
         "taille_du_fichier": 0,
         "est_numerique": False,
-        "nombre d'exemplaires": 1,
-        "catégorie": "Roman",
+        "id": 4,
+        "categorie": "Roman",
     },
     {
         "titre": "Moby Dick",
@@ -223,26 +233,26 @@ def reinitialiser_json():
         "ISBN": "HM3344",
         "taille_du_fichier": 0,
         "est_numerique": False,
-        "nombre d'exemplaires": 3,
-        "catégorie": "Roman d'aventure",
+        "id": 5,
+        "categorie": "Roman d'aventure",
     },
     {
-        "titre": "Le Seigneur des Anneaux : La Communauté de l'Anneau",
+        "titre": "Le Seigneur des Anneaux : La Communaute de l'Anneau",
         "auteur": "J.R.R. Tolkien",
         "ISBN": "JR5678",
         "taille_du_fichier": 200,
         "est_numerique": True,
-        "nombre d'exemplaires": None,
-        "catégorie": "Fantasy",
+        "id": 6,
+        "categorie": "Fantasy",
     },
     {
         "titre": "Jane Eyre",
-        "auteur": "Charlotte Brontë",
+        "auteur": "Charlotte Bronte",
         "ISBN": "CB7788",
         "taille_du_fichier": 0,
         "est_numerique": False,
-        "nombre d'exemplaires": 2,
-        "catégorie": "Roman",
+        "id": 7,
+        "categorie": "Roman",
     },
     {
         "titre": "Dracula",
@@ -250,8 +260,8 @@ def reinitialiser_json():
         "ISBN": "BS9900",
         "taille_du_fichier": 30,
         "est_numerique": True,
-        "nombre d'exemplaires": None,
-        "catégorie": "Gothique / Horreur",
+        "id": 8,
+        "categorie": "Gothique / Horreur",
     },
     {
         "titre": "Le Vieil Homme et la Mer",
@@ -259,8 +269,8 @@ def reinitialiser_json():
         "ISBN": "EH5566",
         "taille_du_fichier": 0,
         "est_numerique": False,
-        "nombre d'exemplaires": 3,
-        "catégorie": "Roman",
+        "id": 9,
+        "categorie": "Roman",
     },
     {
         "titre": "Les Aventures de Tom Sawyer",
@@ -268,13 +278,25 @@ def reinitialiser_json():
         "ISBN": "MT1122",
         "taille_du_fichier": 10,
         "est_numerique": True,
-        "nombre d'exemplaires": None,
-        "catégorie": "Roman d'aventure",
+        "id": 10,
+        "categorie": "Roman d'aventure",
     }
 ]
 
     try:
         with open(fichier_json, 'w', encoding='utf-8') as f:
             json.dump(livres, f, indent=2)
+    except Exception:
+        raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)
+    
+    try:
+        with open("data/emprunts.json", 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
+    except Exception:
+        raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)
+    
+    try:
+        with open("data/utilisateurs.json", 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
     except Exception:
         raise ErreurDonnees("Impossible de réinitialiser le fichier JSON", 106)

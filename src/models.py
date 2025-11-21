@@ -22,7 +22,7 @@ class Bibliotheque:
         ajouter_livre_dans_json(livre)
             
     def importer_json(self):
-        donnees=recup_donnees_json()
+        donnees=charger_json("data/livres.json")
         importer_donnees_json(self,donnees)
             
     def supprimer_livre_par_ISBN(self, isbn:str):
@@ -50,34 +50,40 @@ class Bibliotheque:
                 #simulation d'envoi de mail
                 print("Info pour "+utilisateur.nom+"Qui a l'adresse mail: "+utilisateur.adresse_mail+", Le livre que vous convoitiez: "+livre.titre+" est de nouveau disponible")
 
-    def rendre_livre(self,livre,utilisateur,note=None,commentaire=None):
+    def rendre_livre_a_biblio(self,livre,utilisateur,note=None,commentaire=None):
         for emprunt in self.liste_emprunts:
             if emprunt.livre==livre and emprunt.utilisateur==utilisateur:
                 if note!=None or commentaire!=None:
-                    emprunt.rendre_livre(utilisateur,note,commentaire)
+                    emprunt.livre.ajouter_retour(utilisateur,note,commentaire)
+                    emprunt.rendre_livre()
                 if emprunt.retard_rendu():
-                    return emprunt.amande()
+                    return emprunt.amende()
                 else:
                     return 0
                 
-    def peut_etre_emprunte(self,livre,date_debut,date_fin)->bool:
-        if isinstance(livre,Livre_numerique):
+    def nombre_exemplaires_livre(self,livre):
+        compteur=0
+        for _livreparcouru in self.liste_livres:
+            if _livreparcouru.titre==livre.titre and _livreparcouru.auteur==livre.auteur and _livreparcouru.etat=="disponible":
+                compteur+=1
+        return compteur
+                
+    def peut_etre_emprunte(self,livre_,date_debut,date_fin)->bool:
+        if isinstance(livre_,Livre_numerique):
             return True
         else:
             debut_emprunt = datetime.strptime(date_debut, "%d/%m/%Y")
             fin_emprunt = datetime.strptime(date_fin, "%d/%m/%Y")
-
             compteur = 0
-
             for emprunt in self.liste_emprunts:
-                debut_en_cours = datetime.strptime(emprunt.debut, "%d/%m/%Y")
-                fin_en_cours = datetime.strptime(emprunt.fin, "%d/%m/%Y")
-                # si chevauchement et le livre n'a pas encore été rendu alors que cela aurait du
-                if debut_emprunt <= fin_en_cours and fin_emprunt >= debut_en_cours:
-                    compteur += 1
-                elif (fin_en_cours<datetime.today() and not emprunt.est_rendu):
-                    compteur+=1
-            return compteur < livre.nombre_exemplaires
+                    if emprunt.livre.titre==livre_.titre and emprunt.livre.auteur==livre_.auteur:
+                        debut_en_cours = datetime.strptime(emprunt.debut, "%d/%m/%Y")
+                        fin_en_cours = datetime.strptime(emprunt.fin, "%d/%m/%Y")
+                        if debut_emprunt <= fin_en_cours and fin_emprunt >= debut_en_cours:
+                            compteur += 1
+                        elif (fin_en_cours<datetime.today() and not emprunt.est_rendu):
+                            compteur+=1
+            return compteur < self.nombre_exemplaires_livre(livre_)
                     
     def emprunter_livre(self, utilisateur, livre, date_debut, date_fin):
         pouvoir_emprunter=True
@@ -99,30 +105,32 @@ class Bibliotheque:
                 if emprunt.utilisateur==utilisateur and emprunt.livre==livre and not emprunt.est_rendu:
                     pouvoir_emprunter=False
 
-        if not self.peut_emprunter(livre,date_debut,date_fin):
+        if not self.peut_etre_emprunte(livre,date_debut,date_fin):
             print ("Tous les exemplaires de ce livre ont été réservés, vous ne pouvez pas effectuer cette reservation")
             pouvoir_emprunter=False
 
         if pouvoir_emprunter:
-            if self in livre.utilisateur_interesse:
+            if utilisateur in livre.utilisateur_interesse:
                 livre.utilisateur_interesse.remove(utilisateur)
 
             self.ajouter_emprunt(utilisateur,livre,date_debut,date_fin)
             utilisateur.livres_empruntes.append((livre, (date_debut, date_fin)))
             ajouter_livre_emprunte(utilisateur, livre, date_debut, date_fin,False)
+            livre.etat="emprunte"
             utilisateur.livres_empruntes_ce_mois+=1
             print(utilisateur.nom+" a emprunté le livre du "+date_debut+" au "+date_fin)
         else:
             print("Vous recevrez un mail quand le produit sera de nouveau disponible")
-            livre.utilisateur_interesse.append(utilisateur)
+            if not ( utilisateur in livre.utilisateur_interesse):
+                livre.utilisateur_interesse.append(utilisateur)
              
     def afficher(self):
         return (self.nom, self.liste_livres)
 
 #Modélisation d'une classe livre
 class Livre:
-    Compteur=0
-    def __init__(self,titre:str,auteur:str,ISBN:str,nombre_exemplaires:int,categorie:str):
+    Compteur=10
+    def __init__(self,titre:str,auteur:str,ISBN:str,categorie:str):
         if not isinstance(titre, str) or not titre.strip():
             raise ErreurLivre("Le titre doit être une chaîne non vide.",code_erreur=101)
         if not isinstance(auteur, str) or not auteur.strip():
@@ -133,7 +141,7 @@ class Livre:
         self.auteur=auteur
         self.ISBN=ISBN
         self.utilisateur_interesse=[]
-        self.nombre_exemplaires=nombre_exemplaires
+        self.etat="disponible"
         self.categorie=categorie
         self.retours=[]
         Livre.Compteur+=1
@@ -142,13 +150,19 @@ class Livre:
     def ajouter_retour(self,utilisateur,note=None,commentaire=None):
         self.retours.append((utilisateur,note,commentaire))
     
+    def etre_perdu(self):
+        self.etat="perdu"
+
+    def etre_endommage(self):
+        self.etat="endommage"
+    
     
 #Modélisation d'une classe livre numérique
 class Livre_numerique(Livre):
     def __init__(self,titre:str,auteur:str,ISBN:str,taille_fichier:int,categorie:str):
         if not isinstance(taille_fichier, int) or taille_fichier<0:
             raise ErreurLivreNumerique("La taille du fichier doit être un entier positif (int>=0) .",code_erreur=101)
-        super().__init__(titre,auteur,ISBN,None,categorie)
+        super().__init__(titre,auteur,ISBN,categorie)
         self._taille_fichier:int=taille_fichier
 
     @property
@@ -158,14 +172,19 @@ class Livre_numerique(Livre):
 class Utilisateur():
     Compteur=0
     def __init__(self,nom,mdp,adresse_mail):
-        self.Nom=nom
+        self.nom=nom
         self.MDP=mdp
         self.adresse_mail=adresse_mail
         self.IsAdmin=False
         self.livres_empruntes=[]
         self.livres_empruntes_ce_mois=0
+        self.abonnement="standard"
         self.livres_par_mois=5
-        self.penalite=0
+        #duree en jours
+        self.abonnement_valide=True
+        self.jour_abonnement=0
+        self.duree_abonnement:int=30
+        self.indice_penalite=1
         Utilisateur.Compteur+=1
         self.Id=Utilisateur.Compteur
     
@@ -173,12 +192,42 @@ class Utilisateur():
         if not self.IsAdmin:
             self.IsAdmin=True
             self.livres_par_mois*=2
+    
+    def changer_abonnement(self,abonnement):
+        if abonnement=="standard" :
+            self.duree_abonnement=30
+            self.indice_penalite=1
+            self.livres_par_mois=5
+        elif abonnement =="premium":
+            self.duree_abonnement=90
+            self.indice_penalite=0.75
+            self.livres_par_mois=10
+        elif abonnement=="VIP":
+            self.duree_abonnement=365
+            self.indice_penalite=0.5
+            self.livres_par_mois=15
+        else:
+            print ("Cet abonnement: ",abonnement," n'existe pas")
+        if self.IsAdmin:
+            self.livres_par_mois*=2
+        self.abonnement=abonnement 
 
     def enregistrer_utilisateur_dans_json(self):
         ajouter_utilisateur_dans_json(self)
 
     def reset_livres_empruntes_ce_mois(self):
         self.livres_empruntes_ce_mois=0
+
+    def renouveler_abonnement(self):
+        self.jour_abonnement=0
+        self.abonnement_valide=True
+    
+    def desactiver_abonnement(self):
+        self.abonnement_valide=False
+
+    def actualiser_abonnement(self):
+        if self.jour_abonnement>self.duree_abonnement:
+            self.desactiver_abonnement()
 
 
 class Emprunt ():
@@ -188,6 +237,7 @@ class Emprunt ():
         self.debut=debut
         self.fin=fin
         self.est_rendu=False
+
     
     def retard_rendu(self):
         fin_emprunt = datetime.strptime(self.fin, "%d/%m/%Y")
@@ -196,11 +246,13 @@ class Emprunt ():
     def rendre_livre(self):
         self.est_rendu=True
     
-    def amande(self):
+    def amende(self):
         if self.retard_rendu():
             emprunt_end = datetime.strptime(self.fin, "%d/%m/%Y")
             date_ajd= date.today()
-            return ((date_ajd-emprunt_end.date()).days)/2
+            return(self.utilisateur.indice_penalite*(date_ajd-emprunt_end.date()).days)//2
+        else:
+            return 0
 
         
 

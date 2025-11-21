@@ -5,15 +5,15 @@ from tests.conftest import *
 
 def test_erreurs_creation_livre():
     with pytest.raises(ErreurLivre) as exc_info:
-        Livre(1, "Jean Dubois", "I31BS-7",2,"Compte")
+        Livre(1, "Jean Dubois", "I31BS-7","Comte")
     assert exc_info.value.code_erreur == 101
 
     with pytest.raises(ErreurLivre) as exc_info:
-        Livre("Livre Test", True, "I31BS-7",2,"Compte")
+        Livre("Livre Test", True, "I31BS-7","Comte")
     assert exc_info.value.code_erreur == 102
 
     with pytest.raises(ErreurLivre) as exc_info:
-        Livre("Livre Test", "Jean Dubois", "",4,"Compte")
+        Livre("Livre Test", "Jean Dubois", "","Comte")
     assert exc_info.value.code_erreur == 103
 
 def test_erreurs_creation_livre_numerique():
@@ -37,22 +37,21 @@ def tests_erreurs_creation_bibliotheque():
     assert exc_info.value.code_erreur == 104
 
 @pytest.mark.parametrize(
-    "titre, auteur, isbn, nbr_exempl,categorie",
+    "titre, auteur, isbn,categorie",
     [
-        ("Le Mystère de l'Étoile", "Jean Dupont", "AB123-1XYZ",1,"Conte"),
-        ("Aventures en Forêt", "Claire Martin", "CD456-7JKL",7,"Roman"),
-        ("Le Secret du Pharaon", "Marc Leblanc", "EF789-2MNO",6,"Poésie"),
-        ("Voyage au Centre du Temps", "Sophie Durand", "GH012-4PQR",2,"Fable"),
-        ("L'Odyssée Perdue", "Louis Moreau", "IJ345-6STU",3,"Bande_dessinée"),
-        ("Les Ombres de la Ville", "Emma Bernard", "KL678-9VWX",1,"Roman historique")
+        ("Le Mystère de l'Étoile", "Jean Dupont", "AB123-1XYZ","Conte"),
+        ("Aventures en Forêt", "Claire Martin", "CD456-7JKL","Roman"),
+        ("Le Secret du Pharaon", "Marc Leblanc", "EF789-2MNO","Poésie"),
+        ("Voyage au Centre du Temps", "Sophie Durand", "GH012-4PQR","Fable"),
+        ("L'Odyssée Perdue", "Louis Moreau", "IJ345-6STU","Bande_dessinée"),
+        ("Les Ombres de la Ville", "Emma Bernard", "KL678-9VWX","Roman historique")
     ]
 )
-def test_creation_livre_param(titre, auteur, isbn,nbr_exempl,categorie):
-    livre = Livre(titre, auteur, isbn, nbr_exempl,categorie)
+def test_creation_livre_param(titre, auteur, isbn,categorie):
+    livre = Livre(titre, auteur, isbn,categorie)
     assert livre.titre == titre
     assert livre.auteur == auteur
     assert livre.ISBN == isbn
-    assert livre.nombre_exemplaires==nbr_exempl
     assert livre.categorie==categorie
 
 @pytest.mark.parametrize(
@@ -96,7 +95,7 @@ def test_erreurs_fonctionnement_bibliotheque(bibliotheque1:Bibliotheque,livre1:L
     assert exc_info.value.code_erreur == 101
 
     with pytest.raises(ErreurBibliotheque) as exc_info:
-        b1.ajouter_livre(("Le Petit Prince", "Antoine de Saint-Exupéry", "NP123-1", 12,1,"Conte"))
+        b1.ajouter_livre(("Le Petit Prince", "Antoine de Saint-Exupéry", "NP123-1", 12,"Conte"))
     assert exc_info.value.code_erreur == 102
 
     with pytest.raises(ErreurBibliotheque) as exc_info:
